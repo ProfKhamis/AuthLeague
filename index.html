@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title id="pageTitle">Efootball League Management</title>
+    <link rel="icon" type="image/png" href="/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script src="config.js"></script>
+    <style>
+        :root {
+            --bg-color: #eef1f6;
+            --light-shadow: #ffffff;
+            --dark-shadow: #d2d4da;
+            --text-color: #333;
+            --primary-shadow: 2px 2px 5px var(--dark-shadow), -2px -2px 5px var(--light-shadow);
+            --inset-shadow: inset 2px 2px 5px var(--dark-shadow), inset -2px -2px 5px var(--light-shadow);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        .container-main {
+            min-height: 100vh;
+            padding-bottom: 6rem; /* Add padding to account for the fixed footer */
+        }
+
+        .neumorphic-card {
+            background: var(--bg-color);
+            border-radius: 20px;
+            box-shadow: 8px 8px 16px var(--dark-shadow), -8px -8px 16px var(--light-shadow);
+        }
+
+        .neumorphic-button {
+            background: var(--bg-color);
+            border-radius: 12px;
+            box-shadow: 6px 6px 12px var(--dark-shadow), -6px -6px 12px var(--light-shadow);
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .neumorphic-input {
+            background: var(--bg-color);
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            box-shadow: var(--inset-shadow);
+            outline: none;
+        }
+
+        .neumorphic-table-container {
+            border-radius: 20px;
+            overflow: auto;
+            box-shadow: var(--primary-shadow);
+        }
+
+        .neumorphic-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .neumorphic-table th,
+        .neumorphic-table td {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid rgba(220,220,220,0.5);
+            font-size: 0.95rem;
+            white-space: nowrap;
+        }
+
+        .neumorphic-table th {
+            background: var(--bg-color);
+            font-weight: 700;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        /* Keep the top-left header cell fixed when scrolling both ways */
+        .neumorphic-table thead th:first-child {
+            position: sticky;
+            top: 0;
+            left: 0;
+            z-index: 20; /* above other sticky cells */
+            background: var(--bg-color);
+        }
+
+        .neumorphic-table th.numeric {
+            text-align: center;
+        }
+
+        .neumorphic-table td:first-child,
+        .neumorphic-table th:first-child {
+            position: sticky;
+            left: 0;
+            background: var(--bg-color);
+            z-index: 11;
+            white-space: nowrap;
+        }
+
+        .neumorphic-table td.numeric {
+            text-align: center;
+        }
+
+        .page-content { display: none; }
+        .page-content.active { display: block; }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            z-index: 50;
+        }
+
+        .modal-overlay.active {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            display: none;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+        
+        .profile-image {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            box-shadow: var(--primary-shadow);
+        }
+        
+        @media (max-width: 768px) {
+    .neumorphic-table td:first-child,
+    .neumorphic-table th:first-child {
+        position: sticky;
+        left: 0;
+        background: var(--bg-color);
+        z-index: 11;
+        white-space: nowrap;
+    }
+}
+/* Keep first column sticky on larger screens as well */
+
+@media (max-width: 768px) {
+    #mobileSidebar {
+        width: 80vw;
+        min-width: 220px;
+        max-width: 320px;
+    }
+}
+        
+    </style>
+</head>
+<body class="bg-gray-100 font-sans p-4 md:p-8">
+
+    <div id="loadingOverlay" class="loading-overlay">
+        <p class="text-lg font-semibold">Loading...</p>
+    </div>
+ 
+<!-- Header: Brand + Desktop Nav + Mobile Hamburger -->
+<header class="sticky top-0 z-40 bg-[#eef1f6] max-w-7xl mx-auto mb-6 flex items-center justify-between px-4 py-3 md:py-4">
+    <a href="#" class="text-2xl md:text-3xl font-extrabold tracking-tight text-gray-800 select-none">EasyLeague</a>
+    <nav  class="neumorphic-card p-2 md:p-4 rounded-full hidden md:flex items-center gap-2 md:gap-4">
+        <button data-page="home" class="neumorphic-button px-4 py-2">Home</button>
+        <button data-page="league" class="neumorphic-button px-4 py-2">League</button>
+        <button data-page="matches" class="neumorphic-button px-4 py-2">Matches</button>
+        <a href="" id="fixturesLinkDesktop" class="neumorphic-button px-4 py-2">Fixtures</a>
+        <button data-page="admin" id="adminNavBtn" class="neumorphic-button px-4 py-2 hidden">Admin</button>
+    </nav>
+    <button id="mobileMenuBtn" class="md:hidden neumorphic-button p-2" aria-label="Open menu">
+        <svg id="hamburgerIcon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+        <svg id="closeIcon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-700 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+    </button>
+</header>
+
+<!-- Sidebar nav for mobile -->
+<div id="mobileSidebar" class="fixed top-0 left-0 h-full w-64 bg-[#eef1f6] shadow-lg z-40 transform -translate-x-full transition-transform duration-300 md:hidden flex flex-col">
+    <!-- X Icon at top left -->
+    <div class="flex items-center justify-between p-4">
+        <button id="closeSidebarBtn" class="neumorphic-button p-2">
+            <svg id="closeIconSidebar" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+        </button>
+    </div>
+    <!-- Nav items -->
+    <div class="flex flex-col items-center gap-4 mt-4 px-4">
+        <button data-page="home" class="neumorphic-button px-4 py-2 w-full">Home</button>
+        <button data-page="league" class="neumorphic-button px-4 py-2 w-full">League</button>
+        <button data-page="matches" class="neumorphic-button px-4 py-2 w-full">Matches</button>
+        <a href="" id="fixturesLinkMobile" class="neumorphic-button px-4 py-2 w-full block text-center">Fixtures</a>
+        <button data-page="admin" id="adminNavBtnMobile" class="neumorphic-button px-4 py-2 w-full hidden">Admin</button>
+    </div>
+</div>
+<div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-30 z-30 hidden md:hidden">
+</div>
+    <!-- Navigation moved into header above -->
+
+    <div class="max-w-7xl mx-auto space-y-16 container-main">
+        <!-- Home Page -->
+        <section id="home-page" class="page-content active">
+    <div class="neumorphic-card p-6 md:p-16 flex flex-col items-center justify-center text-center">
+        <h1 class="text-3xl md:text-5xl font-bold text-gray-800 mb-4 md:mb-6">Efootball League Manager</h1>
+        <p class="mt-2 md:mt-4 text-base md:text-lg text-gray-600 max-w-xs md:max-w-3xl mx-auto mb-6 md:mb-8">
+            Welcome to the official platform for Efootball League standings. Track your favorite teams, view real-time rankings, and manage teams as an admin.
+        </p>
+        <div id="authSection" class="mt-4 md:mt-8 w-full flex flex-col items-center">
+            <button id="googleSignInBtn" class="neumorphic-button px-6 py-3 font-semibold w-full md:w-auto">
+                Sign in with Google
+            </button>
+            <div id="profileSection" class="hidden flex items-center justify-center gap-4 mt-4">
+                <img id="profileImage" class="profile-image" alt="Profile">
+                <span id="profileName" class="font-medium text-gray-700"></span>
+                <button id="signOutBtn" class="neumorphic-button px-4 py-2 text-sm font-semibold">Sign Out</button>
+            </div>
+        </div>
+    </div>
+</section>
+
+        <!-- League Page -->
+        <section id="league-page" class="page-content">
+            <div class="neumorphic-card p-6 md:p-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl md:text-3xl font-semibold text-gray-700">League Standings</h2>
+                    <select id="leagueSelectorLeague" class="neumorphic-input"></select>
+                </div>
+                <div id="leagueTableContainer" class="neumorphic-table-container max-h-[500px]">
+                    <table id="leagueTable" class="neumorphic-table">
+                        <thead>
+                            <tr>
+                                <th>Team</th>
+                                <th class="numeric">P</th>
+                                <th class="numeric">W</th>
+                                <th class="numeric">D</th>
+                                <th class="numeric">L</th>
+                                <th class="numeric">GF</th>
+                                <th class="numeric">GA</th>
+                                <th class="numeric">GD</th>
+                                <th class="numeric">Pts</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div class="flex justify-center mt-8">
+                    <button data-table-id="leagueTableContainer" class="share-btn neumorphic-button px-6 py-3">Share Table</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Match History Page -->
+        <section id="matches-page" class="page-content">
+            <div class="neumorphic-card p-6 md:p-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl md:text-3xl font-semibold text-gray-700">Match History</h2>
+                    <select id="leagueSelectorMatches" class="neumorphic-input"></select>
+                </div>
+                <div class="mb-4">
+                    <input type="text" id="matchSearch" placeholder="Search team..." class="neumorphic-input w-full">
+                </div>
+                <div id="matchesTableContainer" class="neumorphic-table-container max-h-[500px]">
+                    <table id="matchesTable" class="neumorphic-table">
+                        <thead>
+                          <tr>
+                              <th>Home Team</th>
+                              <th>Away Team</th>
+                              <th class="numeric">Score</th>
+                              <th class="numeric">Date</th>
+                          </tr>
+                      </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Admin Page -->
+        <section id="admin-page" class="page-content">
+            <div id="admin-dashboard" class="neumorphic-card p-8 space-y-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-semibold text-center text-gray-700">Admin Dashboard</h2>
+                    <select id="leagueSelectorAdmin" class="neumorphic-input"></select>
+                </div>
+                <div id="admin-message" class="text-center font-medium text-red-600 hidden">You do not have admin access for this league.</div>
+
+                <!-- League Management -->
+                <div id="league-management-section" class="space-y-4">
+                    <h3 class="text-xl font-medium">League Management</h3>
+                    <form id="createLeagueForm" class="space-y-4">
+                        <input type="text" id="leagueNameInput" placeholder="New League Name" class="neumorphic-input w-full" required>
+                        <button type="submit" class="neumorphic-button w-full px-4 py-2 font-semibold">Create League</button>
+                    </form>
+                    <div class="h-48 overflow-y-auto neumorphic-card p-4">
+                        <ul id="leagueListAdmin" class="space-y-2"></ul>
+                    </div>
+                </div>
+
+                <!-- Team Management -->
+                <div id="team-management-section" class="space-y-4 hidden">
+                    <h3 class="text-xl font-medium">Team Management</h3>
+                    <form id="teamForm" class="space-y-4">
+                        <input type="text" id="teamNameInput" placeholder="Team Name" class="neumorphic-input w-full" required>
+                        <button type="submit" class="neumorphic-button w-full px-4 py-2 font-semibold">Add Team</button>
+                    </form>
+                    <div class="h-64 overflow-y-auto neumorphic-card p-4">
+                        <ul id="teamList" class="space-y-2"></ul>
+                    </div>
+                </div>
+
+                <!-- Rename Team -->
+                <div id="rename-team-section" class="space-y-4 hidden">
+                    <h3 class="text-xl font-medium">Rename Team</h3>
+                    <form id="renameForm" class="space-y-4">
+                        <select id="renameSelect" class="neumorphic-input w-full"></select>
+                        <input type="text" id="renameInput" placeholder="New Team Name" class="neumorphic-input w-full" required>
+                        <button type="submit" class="neumorphic-button w-full px-4 py-2 font-semibold">Rename</button>
+                    </form>
+                </div>
+
+                <!-- Submit Score -->
+                <div id="submit-score-section" class="space-y-4 hidden">
+                    <h3 class="text-xl font-medium">Submit Score</h3>
+                    <form id="scoreForm" class="space-y-4">
+                        <div class="flex gap-2">
+                            <select id="homeTeam" class="neumorphic-input flex-1"></select>
+                            <input type="number" id="homeGoals" min="0" class="neumorphic-input w-20" placeholder="0">
+                        </div>
+                        <div class="flex gap-2">
+                            <select id="awayTeam" class="neumorphic-input flex-1"></select>
+                            <input type="number" id="awayGoals" min="0" class="neumorphic-input w-20" placeholder="0">
+                        </div>
+                        <button type="submit" class="neumorphic-button w-full px-4 py-2 font-semibold">Submit</button>
+                    </form>
+                </div>
+
+                <!-- End Season -->
+                <div id="end-season-section" class="space-y-4 hidden">
+                    <h3 class="text-xl font-medium">End Season</h3>
+                    <p class="text-gray-600">This will reset all team stats back to 0 for a fresh season.</p>
+                    <button id="endSeasonBtn" class="neumorphic-button w-full px-6 py-3 font-semibold text-red-700">End Season</button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Hidden message box -->
+    <div id="messageBox" class="modal-overlay">
+        <div class="neumorphic-card p-6 text-center">
+            <p id="messageText" class="text-gray-700 font-medium"></p>
+            <button id="closeMessageBox" class="neumorphic-button mt-4 px-4 py-2 text-sm">OK</button>
+        </div>
+    </div>
+
+    <!-- Hidden confirmation box -->
+    <div id="confirmationBox" class="modal-overlay">
+        <div class="neumorphic-card p-6 text-center">
+            <p id="confirmationText" class="text-gray-700 font-medium mb-4"></p>
+            <div class="flex gap-4 justify-center">
+                <button id="confirmYes" class="neumorphic-button px-4 py-2 text-sm">Yes</button>
+                <button id="confirmNo" class="neumorphic-button px-4 py-2 text-sm">No</button>
+            </div>
+        </div>
+    </div>
+
+   
+    <footer class="mt-16 text-center text-gray-600 text-sm fixed bottom-0 left-0 right-0 z-10 p-4 bg-gray-100">
+        <p id="userIdDisplay" class="text-xs"></p>
+        <p>&copy; 2025 All rights reserved. All credits to ProfKhamis - Kirinyaga University.</p>
+    </footer>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, updateDoc, deleteDoc, getDoc, onSnapshot, runTransaction, arrayUnion, arrayRemove, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        
+        // Use environment configuration
+        setLogLevel(window.ENV_CONFIG.app.debug ? 'debug' : 'error');
+
+        // Get configuration from environment
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = window.ENV_CONFIG.firebase;
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        let app, auth, db;
+        let currentUserId = null;
+        let currentUserName = "Guest";
+        let currentUserPhoto = "";
+        let isCurrentLeagueAdmin = false;
+        let authReady = false;
+        let currentLeague = window.ENV_CONFIG.app.defaultLeague; // Default league from config
+        let leaguesData = {};
+        let matchesData = {};
+
+        // UI Elements
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const adminNavBtn = document.getElementById('adminNavBtn');
+        const adminPage = document.getElementById('admin-page');
+        const adminMessage = document.getElementById('admin-message');
+        const adminSections = document.querySelectorAll('#admin-dashboard > div[id$="-section"]');
+        const userIdDisplay = document.getElementById('userIdDisplay');
+        const googleSignInBtn = document.getElementById('googleSignInBtn');
+        const signOutBtn = document.getElementById('signOutBtn');
+        const profileSection = document.getElementById('profileSection');
+        const profileName = document.getElementById('profileName');
+        const profileImage = document.getElementById('profileImage');
+        // Ensure privacy-friendly referrer policy for third-party avatars
+        if (profileImage) {
+            profileImage.referrerPolicy = 'no-referrer';
+        }
+
+        function buildFallbackAvatar(name) {
+            const base = 'https://ui-avatars.com/api/';
+            const params = new URLSearchParams({
+                name: name || 'User',
+                size: '40',
+                background: 'FFFFFF',
+                color: '000000',
+                format: 'png'
+            });
+            return `${base}?${params.toString()}`;
+        }
+
+        function setProfileImageSource(primaryUrl, displayName) {
+            const placeholder = 'https://placehold.co/40x40/FFFFFF/000000?text=U';
+            const fallback = buildFallbackAvatar(displayName);
+            if (!profileImage) return;
+            // Set cascading fallbacks: primary -> ui-avatars -> placeholder
+            profileImage.onerror = null;
+            profileImage.src = primaryUrl || fallback;
+            profileImage.onerror = () => {
+                if (profileImage.src !== fallback) {
+                    profileImage.src = fallback;
+                } else if (profileImage.src !== placeholder) {
+                    profileImage.src = placeholder;
+                }
+            };
+        }
+
+const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+const mobileSidebar = document.getElementById('mobileSidebar');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
+const hamburgerIcon = document.getElementById('hamburgerIcon');
+const closeIcon = document.getElementById('closeIcon');
+const closeIconSidebar = document.getElementById('closeIconSidebar');
+const adminNavBtnMobile = document.getElementById('adminNavBtnMobile');
+
+// Open sidebar
+mobileMenuBtn.addEventListener('click', () => {
+    const isOpen = !mobileSidebar.classList.contains('-translate-x-full');
+    if (isOpen) {
+        // Close sidebar
+        mobileSidebar.classList.add('-translate-x-full');
+        sidebarOverlay.classList.add('hidden');
+        hamburgerIcon.classList.remove('hidden');
+        closeIcon.classList.add('hidden');
+        if (closeIconSidebar) closeIconSidebar.classList.add('hidden');
+        mobileMenuBtn.classList.remove('hidden');
+    } else {
+        // Open sidebar
+        mobileSidebar.classList.remove('-translate-x-full');
+        sidebarOverlay.classList.remove('hidden');
+        hamburgerIcon.classList.add('hidden');
+        closeIcon.classList.remove('hidden');
+        if (closeIconSidebar) closeIconSidebar.classList.remove('hidden');
+        mobileMenuBtn.classList.add('hidden');
+    }
+});
+
+
+sidebarOverlay.addEventListener('click', () => {
+    mobileSidebar.classList.add('-translate-x-full');
+    sidebarOverlay.classList.add('hidden');
+    hamburgerIcon.classList.remove('hidden');
+    closeIcon.classList.add('hidden');
+    if (closeIconSidebar) closeIconSidebar.classList.add('hidden');
+    mobileMenuBtn.classList.remove('hidden');
+});
+
+window.addEventListener('resize', () => {
+    if (window.innerWidth >= 768) {
+        mobileSidebar.classList.add('-translate-x-full');
+        sidebarOverlay.classList.add('hidden');
+        hamburgerIcon.classList.remove('hidden');
+        closeIcon.classList.add('hidden');
+    }
+});
+
+// Close sidebar button
+document.getElementById('closeSidebarBtn').addEventListener('click', () => {
+    mobileSidebar.classList.add('-translate-x-full');
+    sidebarOverlay.classList.add('hidden');
+    hamburgerIcon.classList.remove('hidden');
+    closeIcon.classList.add('hidden');
+    if (closeIconSidebar) closeIconSidebar.classList.add('hidden');
+    mobileMenuBtn.classList.remove('hidden');
+});
+
+mobileSidebar.querySelectorAll('button[data-page], a[data-page]').forEach(button => {
+    button.addEventListener('click', (e) => {
+        const pageId = e.target.dataset.page;
+        document.querySelectorAll('.page-content').forEach(page => {
+            page.classList.remove('active');
+        });
+        document.getElementById(`${pageId}-page`).classList.add('active');
+        mobileSidebar.classList.add('-translate-x-full');
+        sidebarOverlay.classList.add('hidden');
+        hamburgerIcon.classList.remove('hidden');
+        closeIcon.classList.add('hidden');
+        mobileMenuBtn.classList.remove('hidden');
+    });
+});
+        // Firestore Collections
+        const leaguesCollection = () => collection(db, `artifacts/${appId}/public/data/leagues`);
+        const matchesCollection = () => collection(db, `artifacts/${appId}/public/data/matches`);
+
+        function showLoading() { loadingOverlay.classList.add('active'); }
+        function hideLoading() { loadingOverlay.classList.remove('active'); }
+
+        // Initialize Firebase and set up auth listener
+        async function initializeAndAuthenticate() {
+            showLoading();
+            try {
+                // Set fixtures links and title from configuration
+                document.getElementById('fixturesLinkMobile').href = window.ENV_CONFIG.services.fixturesUrl;
+                document.getElementById('fixturesLinkDesktop').href = window.ENV_CONFIG.services.fixturesUrl;
+                document.getElementById('pageTitle').textContent = window.ENV_CONFIG.app.name;
+                
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                    console.log("Signed in with custom token.");
+                } else {
+                    //await signInAnonymously(auth);
+                    //showMessageBox("Please sign in with Google to use the app.");
+                }
+                
+                onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        currentUserId = user.uid;
+        currentUserName = user.displayName || user.email || "User";
+        currentUserPhoto = user.photoURL || '';
+        profileSection.classList.remove('hidden');
+        googleSignInBtn.classList.add('hidden');
+        profileName.textContent = currentUserName;
+        setProfileImageSource(currentUserPhoto, currentUserName);
+        userIdDisplay.textContent = `User: ${currentUserName} | ID: ${currentUserId}`;
+        adminNavBtn.classList.remove('hidden');
+        adminNavBtnMobile.classList.remove('hidden'); // <-- Add this line
+        console.log(`User authenticated. ID: ${currentUserId}`);
+    } else {
+        currentUserId = null;
+        currentUserName = "Guest";
+        currentUserPhoto = "";
+        profileSection.classList.add('hidden');
+        googleSignInBtn.classList.remove('hidden');
+        userIdDisplay.textContent = `User: Not Signed In`;
+        adminNavBtn.classList.add('hidden');
+        adminNavBtnMobile.classList.add('hidden'); // <-- Add this line
+        setProfileImageSource('', 'User');
+        console.log("User not authenticated.");
+    }
+    authReady = true;
+    await checkAndCreateDefaultLeague();
+    setupFirestoreListeners();
+    setupUIEventListeners();
+    hideLoading();
+});
+
+            } catch (error) {
+                console.error("Error initializing Firebase:", error);
+                showMessageBox("Error initializing the app. Check the console for details.");
+                hideLoading();
+            }
+        }
+        
+        // Function to create the default league if it doesn't exist
+        async function checkAndCreateDefaultLeague() {
+            try {
+                console.log("Checking for default league existence...");
+                const docSnap = await getDoc(doc(leaguesCollection(), 'Premier League'));
+                if (!docSnap.exists()) {
+                    console.log("Default league not found, creating it...");
+                    await setDoc(doc(leaguesCollection(), 'Premier League'), {
+                        teams: [
+                            { team: 'Eagles United', P: 0, W: 0, D: 0, L: 0, GF: 0, GA: 0, GD: 0, Pts: 0 },
+                            { team: 'Dragons FC', P: 0, W: 0, D: 0, L: 0, GF: 0, GA: 0, GD: 0, Pts: 0 },
+                            { team: 'Phoenix City', P: 0, W: 0, D: 0, L: 0, GF: 0, GA: 0, GD: 0, Pts: 0 }
+                        ],
+                        adminId: null,
+                        adminName: null,
+                    });
+                    console.log("Default league created.");
+                }
+            } catch (error) {
+                console.error("Error checking or creating default league:", error);
+            }
+        }
+        
+        function setupUIEventListeners() {
+            // Auth button handlers
+            googleSignInBtn.addEventListener('click', async () => {
+                const provider = new GoogleAuthProvider();
+                try {
+                    showLoading();
+                    await signInWithPopup(auth, provider);
+                    console.log("Google Sign-In successful.");
+                } catch (error) {
+                    console.error("Google Sign-In Error:", error);
+                    showMessageBox("Error signing in with Google. See console for details. Ensure 'glitch.me' is an authorized domain in your Firebase project.");
+                } finally {
+                    hideLoading();
+                }
+            });
+            
+            signOutBtn.addEventListener('click', async () => {
+                try {
+                    await signOut(auth);
+                    showMessageBox("You have been signed out.");
+                    console.log("User signed out.");
+                } catch (error) {
+                    console.error("Sign Out Error:", error);
+                    showMessageBox("Error signing out. See console for details.");
+                }
+            });
+
+            // Page Navigation
+            document.querySelectorAll('nav button').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const pageId = e.target.dataset.page;
+                    document.querySelectorAll('.page-content').forEach(page => {
+                        page.classList.remove('active');
+                    });
+                    document.getElementById(`${pageId}-page`).classList.add('active');
+                });
+            });
+
+            // Share button listener
+            document.querySelectorAll('.share-btn').forEach(btn => {
+                btn.addEventListener('click', () => shareTable(btn.dataset.tableId));
+            });
+
+            // League selector listeners
+            document.getElementById('leagueSelectorLeague').addEventListener('change', (e) => {
+                currentLeague = e.target.value;
+                renderLeagueTable();
+            });
+
+            document.getElementById('leagueSelectorMatches').addEventListener('change', (e) => {
+                currentLeague = e.target.value;
+                renderMatchesTable();
+            });
+
+            document.getElementById('leagueSelectorAdmin').addEventListener('change', (e) => {
+                currentLeague = e.target.value;
+                checkAdminStatus();
+                renderAdminList();
+            });
+
+            // Match search listener
+            document.getElementById('matchSearch').addEventListener('input', (e) => {
+                renderMatchesTable(e.target.value);
+            });
+            
+            // Admin form listeners
+          document.getElementById('createLeagueForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const leagueName = document.getElementById('leagueNameInput').value.trim();
+    if (!leagueName || !currentUserId) {
+        showMessageBox("You must be signed in to create a league.");
+        return;
+    }
+
+    // Check if admin already has a league
+    const adminLeagues = Object.keys(leaguesData).filter(
+        leagueName => leaguesData[leagueName].adminId === currentUserId
+    );
+    if (adminLeagues.length > 0) {
+        showMessageBox("You already have a league. Please manage your existing league.");
+        return;
+    }
+
+    showLoading();
+    try {
+        const docRef = doc(leaguesCollection(), leagueName);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            showMessageBox('A league with this name already exists!');
+            return;
+        }
+        await setDoc(docRef, { teams: [], adminId: currentUserId, adminName: currentUserName });
+        document.getElementById('leagueNameInput').value = '';
+        currentLeague = leagueName; // <-- Set currentLeague to the new league
+        checkAdminStatus();         // <-- Update admin status
+        renderAdminList();          // <-- Update admin UI immediately
+        showMessageBox(`League '${leagueName}' created. Please manage your existing league.`);
+    } catch (e) {
+        console.error("Error creating league:", e);
+        showMessageBox("Error creating league. See console for details.");
+    } finally {
+        hideLoading();
+    }
+});
+
+            document.getElementById('leagueListAdmin').addEventListener('click', (e) => {
+                if (e.target.classList.contains('remove-league-btn')) {
+                    const leagueName = e.target.dataset.league;
+                    if (leaguesData[leagueName]?.adminId !== currentUserId) {
+                        showMessageBox("You do not have permission to remove this league.");
+                        return;
+                    }
+                    showConfirmation(`Are you sure you want to remove the league '${leagueName}'? This action is permanent.`, async () => {
+                        showLoading();
+                        try {
+                            await deleteDoc(doc(leaguesCollection(), leagueName));
+                            await deleteDoc(doc(matchesCollection(), leagueName));
+                            showMessageBox(`League '${leagueName}' has been removed.`);
+                        } catch (e) {
+                            console.error("Error removing league:", e);
+                            showMessageBox("Error removing league. See console for details.");
+                        } finally {
+                            hideLoading();
+                        }
+                    });
+                }
+            });
+
+            document.getElementById('teamForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (!isCurrentLeagueAdmin) {
+                    showMessageBox("You do not have permission to add a team to this league.");
+                    return;
+                }
+                const name = document.getElementById('teamNameInput').value.trim();
+                if (!name) return;
+                showLoading();
+                try {
+                    const docRef = doc(leaguesCollection(), currentLeague);
+                    await updateDoc(docRef, {
+                        teams: arrayUnion({ team: name, P: 0, W: 0, D: 0, L: 0, GF: 0, GA: 0, GD: 0, Pts: 0 })
+                    });
+                    document.getElementById('teamNameInput').value = '';
+                    showMessageBox(`${name} added to the league.`);
+                } catch (e) {
+                    console.error("Error adding team:", e);
+                    showMessageBox("Error adding team. See console for details.");
+                } finally {
+                    hideLoading();
+                }
+            });
+
+            document.getElementById('teamList').addEventListener('click', (e) => {
+                if (!isCurrentLeagueAdmin) {
+                    showMessageBox("You do not have permission to remove a team from this league.");
+                    return;
+                }
+                if (e.target.classList.contains('remove-team-btn')) {
+                    const name = e.target.dataset.team;
+                    showConfirmation(`Are you sure you want to remove ${name}?`, async () => {
+                        showLoading();
+                        try {
+                            const teamToRemove = (leaguesData[currentLeague]?.teams || []).find(t => t.team === name);
+                            if (!teamToRemove) return;
+                            const docRef = doc(leaguesCollection(), currentLeague);
+                            await updateDoc(docRef, { teams: arrayRemove(teamToRemove) });
+                            showMessageBox(`${name} has been removed.`);
+                        } catch (e) {
+                            console.error("Error removing team:", e);
+                            showMessageBox("Error removing team. See console for details.");
+                        } finally {
+                            hideLoading();
+                        }
+                    });
+                }
+            });
+
+            document.getElementById('renameForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (!isCurrentLeagueAdmin) {
+                    showMessageBox("You do not have permission to rename a team in this league.");
+                    return;
+                }
+                const oldName = document.getElementById('renameSelect').value;
+                const newName = document.getElementById('renameInput').value.trim();
+                if (!newName) return;
+                showConfirmation(`Are you sure you want to rename ${oldName} to ${newName}?`, async () => {
+                    showLoading();
+                    try {
+                        const leagueDocRef = doc(leaguesCollection(), currentLeague);
+                        await runTransaction(db, async (transaction) => {
+                            const leagueDoc = await transaction.get(leagueDocRef);
+                            if (!leagueDoc.exists()) { throw "League does not exist!"; }
+                            const teams = leagueDoc.data().teams;
+                            const teamIndex = teams.findIndex(t => t.team === oldName);
+                            if (teamIndex > -1) {
+                                teams[teamIndex].team = newName;
+                                transaction.update(leagueDocRef, { teams: teams });
+                            }
+                        });
+                        document.getElementById('renameInput').value = '';
+                        showMessageBox(`${oldName} has been renamed to ${newName}.`);
+                    } catch (e) {
+                        console.error("Error renaming team:", e);
+                        showMessageBox("Error renaming team. See console for details.");
+                    } finally {
+                        hideLoading();
+                    }
+                });
+            });
+
+            document.getElementById('scoreForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (!isCurrentLeagueAdmin) {
+                    showMessageBox("You do not have permission to submit a score for this league.");
+                    return;
+                }
+                const homeTeam = document.getElementById('homeTeam').value;
+                const awayTeam = document.getElementById('awayTeam').value;
+                const homeGoals = parseInt(document.getElementById('homeGoals').value, 10);
+                const awayGoals = parseInt(document.getElementById('awayGoals').value, 10);
+
+                if (homeTeam === awayTeam) {
+                    showMessageBox("Home and Away teams cannot be the same!");
+                    return;
+                }
+                if (isNaN(homeGoals) || isNaN(awayGoals)) {
+                    showMessageBox("Please enter valid scores.");
+                    return;
+                }
+
+                showLoading();
+                try {
+                    const leagueDocRef = doc(leaguesCollection(), currentLeague);
+                    const matchesDocRef = doc(matchesCollection(), currentLeague);
+                    
+                    await runTransaction(db, async (transaction) => {
+                  // All reads first
+                  const leagueDoc = await transaction.get(leagueDocRef);
+                  const matchesDoc = await transaction.get(matchesDocRef);
+
+                  if (!leagueDoc.exists()) { throw "League does not exist!"; }
+
+                  let teams = leagueDoc.data().teams;
+                  const homeTeamStats = teams.find(t => t.team === homeTeam);
+                  const awayTeamStats = teams.find(t => t.team === awayTeam);
+
+                  if (!homeTeamStats || !awayTeamStats) { throw "One or more teams not found!"; }
+
+                  // Update stats
+                  homeTeamStats.P++;
+                  awayTeamStats.P++;
+                  homeTeamStats.GF += homeGoals;
+                  homeTeamStats.GA += awayGoals;
+                  awayTeamStats.GF += awayGoals;
+                  awayTeamStats.GA += homeGoals;
+                  homeTeamStats.GD = homeTeamStats.GF - homeTeamStats.GA;
+                  awayTeamStats.GD = awayTeamStats.GF - awayTeamStats.GA;
+
+                  if (homeGoals > awayGoals) {
+                      homeTeamStats.W++;
+                      awayTeamStats.L++;
+                      homeTeamStats.Pts += 3;
+                  } else if (awayGoals > homeGoals) {
+                      awayTeamStats.W++;
+                      homeTeamStats.L++;
+                      awayTeamStats.Pts += 3;
+                  } else {
+                      homeTeamStats.D++;
+                      awayTeamStats.D++;
+                      homeTeamStats.Pts += 1;
+                      awayTeamStats.Pts += 1;
+                  }
+
+                  transaction.update(leagueDocRef, { teams: teams });
+
+                  // Add match history
+                  const match = {
+                      home: homeTeam,
+                      away: awayTeam,
+                      score: `${homeGoals}-${awayGoals}`,
+                      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                  };
+
+                  if (matchesDoc.exists()) {
+                      const matchesArr = matchesDoc.data().matches || [];
+                      matchesArr.push(match);
+                      transaction.update(matchesDocRef, { matches: matchesArr });
+                  } else {
+                      transaction.set(matchesDocRef, { matches: [match] });
+                  }
+              });
+
+                    document.getElementById('homeGoals').value = '';
+                    document.getElementById('awayGoals').value = '';
+                    showMessageBox("Score submitted successfully!");
+                } catch (e) {
+                    console.error("Error submitting score:", e);
+                    showMessageBox("Error submitting score. See console for details.");
+                } finally {
+                    hideLoading();
+                }
+            });
+            
+            document.getElementById('endSeasonBtn').addEventListener('click', () => {
+                if (!isCurrentLeagueAdmin) {
+                    showMessageBox("You do not have permission to end the season for this league.");
+                    return;
+                }
+                showConfirmation("Are you sure you want to end the season? All team stats will be reset to zero.", async () => {
+                    showLoading();
+                    try {
+                        const leagueDocRef = doc(leaguesCollection(), currentLeague);
+                        const matchesDocRef = doc(matchesCollection(), currentLeague);
+                        
+                        await runTransaction(db, async (transaction) => {
+                            const leagueDoc = await transaction.get(leagueDocRef);
+                            if (!leagueDoc.exists()) { throw "League does not exist!"; }
+                            
+                            const teams = leagueDoc.data().teams.map(t => ({
+                                ...t,
+                                P: 0, W: 0, D: 0, L: 0, GF: 0, GA: 0, GD: 0, Pts: 0
+                            }));
+                            
+                            transaction.update(leagueDocRef, { teams: teams });
+                            transaction.set(matchesDocRef, { matches: [] });
+                        });
+                        
+                        showMessageBox("Season has been ended and stats have been reset.");
+                    } catch (e) {
+                        console.error("Error ending season:", e);
+                        showMessageBox("Error ending season. See console for details.");
+                    } finally {
+                        hideLoading();
+                    }
+                });
+            });
+
+            // Message box handlers
+            document.getElementById('closeMessageBox').addEventListener('click', () => {
+                document.getElementById('messageBox').classList.remove('active');
+            });
+        }
+        
+        // Firestore Listeners and UI Rendering
+        function setupFirestoreListeners() {
+            if (!authReady) {
+                console.log("Authentication not ready. Skipping Firestore listeners setup.");
+                return;
+            }
+
+            // Listen for changes in leagues data
+            onSnapshot(leaguesCollection(), (snapshot) => {
+                const newLeaguesData = {};
+                const leagueSelectors = document.querySelectorAll('select[id^="leagueSelector"]');
+                const selectedLeague = currentLeague;
+                
+                // Clear existing options
+                leagueSelectors.forEach(selector => selector.innerHTML = '');
+
+                if (snapshot.docs.length > 0) {
+                    snapshot.forEach(doc => {
+                        newLeaguesData[doc.id] = doc.data();
+                        leagueSelectors.forEach(selector => {
+                            const option = document.createElement('option');
+                            option.value = doc.id;
+                            option.textContent = doc.id;
+                            selector.appendChild(option);
+                        });
+                    });
+                } else {
+                    console.log("No leagues found. Please create one.");
+                }
+
+               leaguesData = newLeaguesData;
+
+              // If user is signed in and has an admin league, always select their league
+              const adminLeagues = currentUserId
+                  ? Object.keys(leaguesData).filter(leagueName => leaguesData[leagueName].adminId === currentUserId)
+                  : [];
+              if (adminLeagues.length > 0) {
+                  currentLeague = adminLeagues[0];
+              } else {
+                  currentLeague = selectedLeague in leaguesData ? selectedLeague : (Object.keys(leaguesData)[0] || "Premier League");
+              }
+
+              leagueSelectors.forEach(selector => selector.value = currentLeague);
+
+              renderLeagueTable();
+              checkAdminStatus();
+              renderAdminList();
+              renderScoreFormTeams();
+              renderRenameSelectTeams();
+            }, (error) => {
+                console.error("Error listening to leagues collection:", error);
+                showMessageBox("Error fetching leagues. See console for details.");
+            });
+            
+            // Listen for changes in matches data
+            onSnapshot(matchesCollection(), (snapshot) => {
+                const newMatchesData = {};
+                snapshot.forEach(doc => {
+                    newMatchesData[doc.id] = doc.data().matches;
+                });
+                matchesData = newMatchesData;
+                renderMatchesTable();
+            }, (error) => {
+                console.error("Error listening to matches collection:", error);
+                showMessageBox("Error fetching matches. See console for details.");
+            });
+        }
+
+        function renderLeagueTable() {
+            const tableBody = document.getElementById('leagueTable').querySelector('tbody');
+            tableBody.innerHTML = '';
+            
+            const teams = leaguesData[currentLeague]?.teams || [];
+            
+            // Sort teams by points (desc), then goal difference (desc), then goals for (desc)
+            teams.sort((a, b) => {
+                if (b.Pts !== a.Pts) return b.Pts - a.Pts;
+                if (b.GD !== a.GD) return b.GD - a.GD;
+                return b.GF - a.GF;
+            });
+
+            if (teams.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td colspan="9" class="text-center italic text-gray-500">No teams found in this league.</td>`;
+                tableBody.appendChild(row);
+                return;
+            }
+            
+            teams.forEach(team => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${team.team}</td>
+                    <td class="numeric">${team.P}</td>
+                    <td class="numeric">${team.W}</td>
+                    <td class="numeric">${team.D}</td>
+                    <td class="numeric">${team.L}</td>
+                    <td class="numeric">${team.GF}</td>
+                    <td class="numeric">${team.GA}</td>
+                    <td class="numeric">${team.GD}</td>
+                    <td class="numeric font-semibold">${team.Pts}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+        
+        function renderMatchesTable(searchTerm = '') {
+            const tableBody = document.getElementById('matchesTable').querySelector('tbody');
+            tableBody.innerHTML = '';
+            
+            const matches = matchesData[currentLeague] || [];
+
+            if (matches.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td colspan="4" class="text-center italic text-gray-500">No matches recorded for this league.</td>`;
+                tableBody.appendChild(row);
+                return;
+            }
+
+            const filteredMatches = matches.filter(match => 
+                match.home.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                match.away.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+
+            if (filteredMatches.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td colspan="4" class="text-center italic text-gray-500">No matches found for "${searchTerm}".</td>`;
+                tableBody.appendChild(row);
+                return;
+            }
+
+           filteredMatches.forEach(match => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${match.home}</td>
+                <td>${match.away}</td>
+                <td class="numeric">${match.score}</td>
+                <td class="numeric">${match.date}</td>
+            `;
+            tableBody.appendChild(row);
+        });
+        }
+
+        function checkAdminStatus() {
+            const leagueData = leaguesData[currentLeague];
+            isCurrentLeagueAdmin = leagueData?.adminId === currentUserId;
+
+            if (isCurrentLeagueAdmin) {
+                adminMessage.classList.add('hidden');
+                adminSections.forEach(section => section.classList.remove('hidden'));
+            } else {
+                adminMessage.classList.remove('hidden');
+                document.getElementById('team-management-section').classList.add('hidden');
+                document.getElementById('rename-team-section').classList.add('hidden');
+                document.getElementById('submit-score-section').classList.add('hidden');
+                document.getElementById('end-season-section').classList.add('hidden');
+            }
+        }
+        
+    function renderAdminList() {
+    const leagueListUl = document.getElementById('leagueListAdmin');
+    leagueListUl.innerHTML = '';
+
+    const allLeagues = Object.keys(leaguesData);
+    const adminLeagues = currentUserId
+        ? allLeagues.filter(leagueName => leaguesData[leagueName].adminId === currentUserId)
+        : [];
+
+    const leagueSelectorAdmin = document.getElementById('leagueSelectorAdmin');
+    leagueSelectorAdmin.innerHTML = '';
+
+    // Only show admin's league in the selector
+    adminLeagues.forEach(leagueName => {
+        const option = document.createElement('option');
+        option.value = leagueName;
+        option.textContent = leagueName;
+        leagueSelectorAdmin.appendChild(option);
+    });
+
+    // If admin already has a league, hide create form and show only their league
+    if (adminLeagues.length > 0) {
+        document.getElementById('createLeagueForm').classList.add('hidden');
+        leagueListUl.innerHTML = adminLeagues.map(leagueName => {
+            const league = leaguesData[leagueName];
+            return `
+                <li class="flex justify-between items-center p-2 neumorphic-card">
+                    <span>${leagueName} (${league.adminName || 'No Admin'})</span>
+                    <button class="remove-league-btn neumorphic-button px-2 py-1 text-xs text-red-600" data-league="${leagueName}">
+                        Remove
+                    </button>
+                </li>
+            `;
+        }).join('');
+        // Set currentLeague to admin's league if not already set
+        if (!adminLeagues.includes(currentLeague)) {
+            currentLeague = adminLeagues[0];
+            leagueSelectorAdmin.value = currentLeague;
+        }
+    } else {
+        // Show create league form only if signed in and admin has no league
+        if (currentUserId) {
+            document.getElementById('createLeagueForm').classList.remove('hidden');
+        } else {
+            document.getElementById('createLeagueForm').classList.add('hidden');
+        }
+        leagueListUl.innerHTML = '';
+    }
+
+    // Populate team and score forms for the current league
+    renderTeamList();
+}
+
+        function renderTeamList() {
+            const teamListUl = document.getElementById('teamList');
+            teamListUl.innerHTML = '';
+            const teams = leaguesData[currentLeague]?.teams || [];
+            
+            if (teams.length === 0) {
+                teamListUl.innerHTML = `<li class="italic text-gray-500">No teams in this league.</li>`;
+                return;
+            }
+
+            teams.forEach(team => {
+                const li = document.createElement('li');
+                li.classList.add('flex', 'justify-between', 'items-center', 'p-2', 'neumorphic-card');
+                li.innerHTML = `
+                    <span>${team.team}</span>
+                    <button class="remove-team-btn neumorphic-button px-2 py-1 text-xs text-red-600" data-team="${team.team}">
+                        Remove
+                    </button>
+                `;
+                teamListUl.appendChild(li);
+            });
+        }
+
+        function renderScoreFormTeams() {
+            const homeSelect = document.getElementById('homeTeam');
+            const awaySelect = document.getElementById('awayTeam');
+            homeSelect.innerHTML = '';
+            awaySelect.innerHTML = '';
+
+            const teams = leaguesData[currentLeague]?.teams || [];
+            teams.forEach(team => {
+                const option1 = document.createElement('option');
+                option1.value = team.team;
+                option1.textContent = team.team;
+                homeSelect.appendChild(option1);
+
+                const option2 = document.createElement('option');
+                option2.value = team.team;
+                option2.textContent = team.team;
+                awaySelect.appendChild(option2);
+            });
+        }
+
+        function renderRenameSelectTeams() {
+            const renameSelect = document.getElementById('renameSelect');
+            renameSelect.innerHTML = '';
+
+            const teams = leaguesData[currentLeague]?.teams || [];
+            if (teams.length === 0) {
+                renameSelect.innerHTML = `<option value="">No teams to rename</option>`;
+                return;
+            }
+            teams.forEach(team => {
+                const option = document.createElement('option');
+                option.value = team.team;
+                option.textContent = team.team;
+                renameSelect.appendChild(option);
+            });
+        }
+
+        // Custom Message and Confirmation Boxes
+        function showMessageBox(message) {
+            document.getElementById('messageText').textContent = message;
+            document.getElementById('messageBox').classList.add('active');
+        }
+
+        function showConfirmation(message, onConfirm) {
+            document.getElementById('confirmationText').textContent = message;
+            const confirmationBox = document.getElementById('confirmationBox');
+            confirmationBox.classList.add('active');
+
+            const confirmYesBtn = document.getElementById('confirmYes');
+            const confirmNoBtn = document.getElementById('confirmNo');
+
+            const handleYes = () => {
+                onConfirm();
+                confirmationBox.classList.remove('active');
+                confirmYesBtn.removeEventListener('click', handleYes);
+                confirmNoBtn.removeEventListener('click', handleNo);
+            };
+
+            const handleNo = () => {
+                confirmationBox.classList.remove('active');
+                confirmYesBtn.removeEventListener('click', handleYes);
+                confirmNoBtn.removeEventListener('click', handleNo);
+            };
+
+            confirmYesBtn.addEventListener('click', handleYes);
+            confirmNoBtn.addEventListener('click', handleNo);
+        }
+
+        // Share functionality
+        function shareTable(tableId) {
+            showLoading();
+            const tableElement = document.getElementById(tableId);
+            html2canvas(tableElement, {
+                useCORS: true,
+                backgroundColor: '#eef1f6',
+                scale: window.devicePixelRatio,
+            }).then(canvas => {
+                const dataUrl = canvas.toDataURL('image/png');
+                const link = document.createElement('a');
+                link.href = dataUrl;
+                link.download = `efootball-standings-${currentLeague}.png`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                showMessageBox("Table image downloaded successfully!");
+            }).catch(error => {
+                console.error("Error generating image:", error);
+                showMessageBox("Error generating image. Please try again.");
+            }).finally(() => {
+                hideLoading();
+            });
+        }
+        
+        initializeAndAuthenticate();
+    </script>
+</body>
+</html>

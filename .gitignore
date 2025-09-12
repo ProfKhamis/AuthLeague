@@ -1,0 +1,12 @@
+# Ignore config file
+config.js
+
+# Node modules (if ever used)
+node_modules/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Env files
+.env
