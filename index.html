@@ -12,7 +12,7 @@
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script src="config.js"></script>
 <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
-
+<script defer src="/_vercel/insights/script.js"></script>
     <style>
         :root {
             --bg-color: #eef1f6;
@@ -471,7 +471,7 @@ document.addEventListener('DOMContentLoaded', validateConfig);
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, updateDoc, deleteDoc, getDoc, onSnapshot, runTransaction, arrayUnion, arrayRemove, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { inject } from "@vercel/analytics";
+       
         
         // Use environment configuration
         setLogLevel(window.ENV_CONFIG.app.debug ? 'debug' : 'error');
