@@ -11,6 +11,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script src="config.js"></script>
+<link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
+
     <style>
         :root {
             --bg-color: #eef1f6;
@@ -39,12 +41,23 @@
         }
 
         .neumorphic-button {
-            background: var(--bg-color);
-            border-radius: 12px;
-            box-shadow: 6px 6px 12px var(--dark-shadow), -6px -6px 12px var(--light-shadow);
-            cursor: pointer;
-            transition: all 0.2s ease-in-out;
-        }
+  background: #f1f5f9;
+  color: #1e293b;
+  border-radius: 12px;
+  box-shadow: 6px 6px 12px #cbd5e1, -6px -6px 12px #ffffff;
+  transition: all 0.2s ease-in-out;
+}
+
+.neumorphic-button:hover {
+  box-shadow: 4px 4px 8px #cbd5e1, -4px -4px 8px #ffffff;
+  transform: translateY(-2px);
+}
+
+.neumorphic-button:active {
+  box-shadow: inset 4px 4px 8px #cbd5e1, inset -4px -4px 8px #ffffff;
+  transform: translateY(2px);
+}
+
 
         .neumorphic-input {
             background: var(--bg-color);
@@ -219,7 +232,8 @@
         <button data-page="home" class="neumorphic-button px-4 py-2 w-full">Home</button>
         <button data-page="league" class="neumorphic-button px-4 py-2 w-full">League</button>
         <button data-page="matches" class="neumorphic-button px-4 py-2 w-full">Matches</button>
-        <a href="" id="fixturesLinkMobile" class="neumorphic-button px-4 py-2 w-full block text-center">Fixtures</a>
+       <a href="fixtures.html" id="fixturesLinkMobile" class="neumorphic-button px-4 py-2 w-full block text-center">Fixtures</a>
+
         <button data-page="admin" id="adminNavBtnMobile" class="neumorphic-button px-4 py-2 w-full hidden">Admin</button>
     </div>
 </div>
@@ -235,16 +249,27 @@
         <p class="mt-2 md:mt-4 text-base md:text-lg text-gray-600 max-w-xs md:max-w-3xl mx-auto mb-6 md:mb-8">
             Welcome to the official platform for Efootball League standings. Track your favorite teams, view real-time rankings, and manage teams as an admin.
         </p>
-        <div id="authSection" class="mt-4 md:mt-8 w-full flex flex-col items-center">
-            <button id="googleSignInBtn" class="neumorphic-button px-6 py-3 font-semibold w-full md:w-auto">
-                Sign in with Google
-            </button>
-            <div id="profileSection" class="hidden flex items-center justify-center gap-4 mt-4">
-                <img id="profileImage" class="profile-image" alt="Profile">
-                <span id="profileName" class="font-medium text-gray-700"></span>
-                <button id="signOutBtn" class="neumorphic-button px-4 py-2 text-sm font-semibold">Sign Out</button>
-            </div>
-        </div>
+        
+       <div id="authSection" class="mt-4 md:mt-8 w-full flex flex-col items-center gap-4">
+
+    <!-- Google Sign-In -->
+    <button id="googleSignInBtn" 
+        class="neumorphic-button flex items-center justify-center gap-2 px-6 py-3 font-semibold w-full md:w-auto transition">
+        <img src="https://www.svgrepo.com/show/355037/google.svg" alt="Google" class="w-5 h-5">
+        Sign in with Google
+    </button>
+
+    <!-- Profile Section -->
+    <div id="profileSection" class="hidden flex items-center justify-center gap-4 mt-4 p-3 rounded-xl bg-white shadow-md">
+        <img id="profileImage" class="w-12 h-12 rounded-full shadow-md border border-gray-200" alt="Profile">
+        <span id="profileName" class="font-medium text-gray-800 text-lg"></span>
+        <button id="signOutBtn" 
+            class="neumorphic-button px-5 py-2 text-sm font-semibold text-white bg-blue-800 hover:bg-blue-900 hover:text-yellow-400 transition rounded-lg">
+            Sign Out
+        </button>
+    </div>
+</div>
+
     </div>
 </section>
 
@@ -400,7 +425,6 @@
     </footer>
     <script>
            window.ENV_CONFIG = {
-    // Firebase Configuration
     firebase: {
         apiKey: "AIzaSyB-Z3HPFIa8c6h5Q0kMOG0V6xQwkgwSEHk",
         authDomain: "efootball-573b2.firebaseapp.com",
@@ -411,21 +435,21 @@
         measurementId: "G-JRPE122ZLK"
     },
     
-    // Application Configuration
+    
     app: {
         name: "Efootball League Manager",
         version: "1.0.0",
-        debug: false, // Set to true for development
+        debug: false,
         defaultLeague: "Premier League"
     },
     
-    // External Services
+   
     services: {
         fixturesUrl: "https://easyfixtures.vercel.app/"
     }
 };
 
-// Validation function to check if all required config is present
+
 function validateConfig() {
     const required = ['apiKey', 'authDomain', 'projectId', 'storageBucket', 'messagingSenderId', 'appId'];
     const missing = required.filter(key => !window.ENV_CONFIG.firebase[key]);
@@ -1347,5 +1371,17 @@ mobileSidebar.querySelectorAll('button[data-page], a[data-page]').forEach(button
         
         initializeAndAuthenticate();
     </script>
+   
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+<script>
+  AOS.init({
+    duration: 800,  
+    easing: 'ease-out-cubic',
+    once: true      
+  });
+</script>
+
+</script>
+
 </body>
 </html>
