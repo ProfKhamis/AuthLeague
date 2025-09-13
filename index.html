@@ -410,7 +410,15 @@
 
         // Get configuration from environment
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = window.ENV_CONFIG.firebase;
+        const firebaseConfig = {
+        apiKey: "AIzaSyB-Z3HPFIa8c6h5Q0kMOG0V6xQwkgwSEHk",
+        authDomain: "efootball-573b2.firebaseapp.com",
+        projectId: "efootball-573b2",
+        storageBucket: "efootball-573b2.firebasestorage.app",
+        messagingSenderId: "1091809156406",
+        appId: "1:1091809156406:web:31ca55643e23b6ef512797",
+        measurementId: "G-JRPE122ZLK"
+    };
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
         let app, auth, db;
