@@ -467,11 +467,11 @@ function validateConfig() {
 document.addEventListener('DOMContentLoaded', validateConfig);
     </script>
     <script type="module">
-        import { Analytics } from "@vercel/analytics/next";
+        
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, updateDoc, deleteDoc, getDoc, onSnapshot, runTransaction, arrayUnion, arrayRemove, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
+        import { inject } from "@vercel/analytics";
         
         // Use environment configuration
         setLogLevel(window.ENV_CONFIG.app.debug ? 'debug' : 'error');
