@@ -13,6 +13,11 @@
     <script src="config.js"></script>
 <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
 <script defer src="/_vercel/insights/script.js"></script>
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="apple-touch-icon" href="/logo.png">
+    <link rel="icon" sizes="192x192" href="/logo.png">
+    <link rel="icon" sizes="512x512" href="/logo.png">
+    <meta name="theme-color" content="#0f172a" />
     <style>
         :root {
             --bg-color: #eef1f6;
@@ -21,6 +26,14 @@
             --text-color: #333;
             --primary-shadow: 2px 2px 5px var(--dark-shadow), -2px -2px 5px var(--light-shadow);
             --inset-shadow: inset 2px 2px 5px var(--dark-shadow), inset -2px -2px 5px var(--light-shadow);
+        }
+
+        /* Dark theme variables */
+        .dark {
+            --bg-color: #0f172a;
+            --light-shadow: #111827;
+            --dark-shadow: #020617;
+            --text-color: #e5e7eb;
         }
 
         body {
@@ -120,8 +133,137 @@
             text-align: center;
         }
 
+        /* Matches table polish */
+        .neumorphic-table tbody tr { transition: background-color 0.15s ease; }
+        .neumorphic-table tbody tr:nth-child(even) { background-color: rgba(255,255,255,0.35); }
+        .neumorphic-table tbody tr:hover { background-color: rgba(255,255,255,0.6); }
+        .dark .neumorphic-table tbody tr:nth-child(even) { background-color: rgba(17,24,39,0.35); }
+        .dark .neumorphic-table tbody tr:hover { background-color: rgba(17,24,39,0.55); }
+        .matches-score { min-width: 56px; display: inline-block; text-align: center; }
+        .date-cell { text-align: right; color: #6b7280; font-size: 12px; }
+
+        /* Compact mobile layout for matches table */
+        @media (max-width: 480px) {
+            #matchesTable thead { display: none; }
+            #matchesTable tbody tr {
+                display: grid;
+                grid-template-columns: 1fr auto;
+                grid-template-areas:
+                    "teams action"
+                    "score action"
+                    "date action";
+                row-gap: 6px;
+                padding: 8px 10px;
+            }
+            #matchesTable tbody td { border-bottom: none; }
+            #matchesTable tbody td:nth-child(1) { grid-area: teams; }
+            #matchesTable tbody td:nth-child(2) { display: none; }
+            #matchesTable tbody td:nth-child(3) { grid-area: score; justify-self: center; }
+            #matchesTable tbody td:nth-child(4) { grid-area: date; justify-self: end; }
+            #matchesTable tbody td:nth-child(5) { grid-area: action; justify-self: end; }
+            #matchesTable .teams-cell::after { content: " vs " attr(data-away); font-weight: 600; }
+        }
+
         .page-content { display: none; }
         .page-content.active { display: block; }
+
+        /* Ticker styles */
+        .ticker {
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            border-radius: 12px;
+            box-shadow: var(--primary-shadow);
+            background: var(--bg-color);
+        }
+        .ticker-track {
+            display: inline-block;
+            white-space: nowrap;
+            will-change: transform;
+            animation: ticker-marquee var(--ticker-duration, 25s) linear infinite;
+        }
+        .ticker:hover .ticker-track { animation-play-state: paused; }
+        @keyframes ticker-marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .ticker-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 12px;
+            margin-right: 24px;
+            border-radius: 9999px;
+            background: #fff;
+            box-shadow: 4px 4px 8px var(--dark-shadow), -4px -4px 8px var(--light-shadow);
+        }
+        .badge-initials {
+            width: 30px;
+            height: 30px;
+            border-radius: 9999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 12px;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .score-pill {
+            padding: 2px 8px;
+            border-radius: 8px;
+            background: #0f172a;
+            color: #fff;
+            font-weight: 700;
+            font-size: 12px;
+        }
+        .ticker-meta { font-size: 11px; color: #6b7280; }
+
+        /* Recent matches (team modal) */
+        .recent-match-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .recent-match-item {
+            background: var(--bg-color);
+            border-radius: 16px;
+            padding: 12px 16px;
+            box-shadow: 8px 8px 16px var(--dark-shadow), -8px -8px 16px var(--light-shadow);
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            align-items: center;
+            column-gap: 12px;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .recent-match-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 6px 6px 12px var(--dark-shadow), -6px -6px 12px var(--light-shadow);
+        }
+        .recent-match-teams { font-weight: 600; color: #1f2937; }
+        .recent-match-score { font-size: 1rem; min-width: 56px; text-align: center; }
+        .recent-match-date { font-size: 12px; color: #6b7280; justify-self: end; }
+        .dark .recent-match-teams { color: #e5e7eb; }
+
+        /* Team modal styles */
+        .form-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 12px;
+            color: #fff;
+        }
+        .form-badge.W { background: #16a34a; }
+        .form-badge.D { background: #6b7280; }
+        .form-badge.L { background: #dc2626; }
 
         .modal-overlay {
             position: fixed;
@@ -207,6 +349,11 @@
         <a href="" id="fixturesLinkDesktop" class="neumorphic-button px-4 py-2">Fixtures</a>
         <button data-page="admin" id="adminNavBtn" class="neumorphic-button px-4 py-2 hidden">Admin</button>
     </nav>
+    <div class="flex items-center gap-2">
+        <button id="themeToggle" class="neumorphic-button p-2" title="Toggle theme" aria-label="Toggle theme">🌓</button>
+        <button id="notificationsToggle" class="neumorphic-button p-2" title="Enable notifications" aria-label="Enable notifications">🔔</button>
+        <button id="installBtn" class="neumorphic-button p-2 hidden" title="Install app" aria-label="Install app">⬇️</button>
+    </div>
     <button id="mobileMenuBtn" class="md:hidden neumorphic-button p-2" aria-label="Open menu">
         <svg id="hamburgerIcon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
@@ -242,7 +389,11 @@
     
 
     <div class="max-w-7xl mx-auto space-y-16 container-main">
-       
+        <!-- Global Ticker at top -->
+        <div class="ticker neumorphic-card p-2 mb-6">
+            <div id="homeTickerTrack" class="ticker-track"></div>
+        </div>
+        
         <section id="home-page" class="page-content active">
     <div class="neumorphic-card p-6 md:p-16 flex flex-col items-center justify-center text-center">
         <h1 class="text-3xl md:text-5xl font-bold text-gray-800 mb-4 md:mb-6">Efootball League Manager</h1>
@@ -270,6 +421,7 @@
     </div>
 </div>
 
+    
     </div>
 </section>
 
@@ -322,6 +474,7 @@
                               <th>Away Team</th>
                               <th class="numeric">Score</th>
                               <th class="numeric">Date</th>
+                              <th class="numeric">Action</th>
                           </tr>
                       </thead>
                         <tbody></tbody>
@@ -387,6 +540,7 @@
                         </div>
                         <button type="submit" class="neumorphic-button w-full px-4 py-2 font-semibold">Submit</button>
                     </form>
+                    <button id="undoLastMatchBtn" class="neumorphic-button w-full px-4 py-2 font-semibold text-red-700">Undo Last Match</button>
                 </div>
 
                 <!-- End Season -->
@@ -404,6 +558,39 @@
         <div class="neumorphic-card p-6 text-center">
             <p id="messageText" class="text-gray-700 font-medium"></p>
             <button id="closeMessageBox" class="neumorphic-button mt-4 px-4 py-2 text-sm">OK</button>
+        </div>
+    </div>
+
+    <!-- Toasts -->
+    <div id="toastContainer" class="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 space-y-2"></div>
+
+    <!-- Team details modal -->
+    <div id="teamModal" class="modal-overlay">
+        <div class="neumorphic-card p-6 md:p-8 max-w-2xl w-[90vw]">
+            <div class="flex items-start justify-between mb-4">
+                <div>
+                    <h3 id="teamModalTitle" class="text-xl md:text-2xl font-semibold text-gray-700"></h3>
+                    <p id="teamModalSubtitle" class="text-sm text-gray-500"></p>
+                </div>
+                <button id="teamModalClose" class="neumorphic-button px-3 py-1 text-sm">Close</button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="neumorphic-card p-4">
+                    <h4 class="font-semibold mb-2">Last 5 Form</h4>
+                    <div id="teamFormBadges" class="flex gap-2"></div>
+                </div>
+                <div class="neumorphic-card p-4">
+                    <h4 class="font-semibold mb-2">Head-to-Head</h4>
+                    <div class="flex items-center gap-2 mb-2">
+                        <select id="h2hOpponent" class="neumorphic-input w-full"></select>
+                    </div>
+                    <div id="h2hSummary" class="text-sm text-gray-600"></div>
+                </div>
+            </div>
+            <div class="neumorphic-card p-4 mt-4">
+                <h4 class="font-semibold mb-2">Recent Matches</h4>
+                <ul id="teamRecentMatches" class="space-y-2 text-sm"></ul>
+            </div>
         </div>
     </div>
 
@@ -470,7 +657,7 @@ document.addEventListener('DOMContentLoaded', validateConfig);
         
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, updateDoc, deleteDoc, getDoc, onSnapshot, runTransaction, arrayUnion, arrayRemove, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, enableIndexedDbPersistence, collection, doc, setDoc, updateDoc, deleteDoc, getDoc, onSnapshot, runTransaction, arrayUnion, arrayRemove, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
        
         
         // Use environment configuration
@@ -490,6 +677,11 @@ document.addEventListener('DOMContentLoaded', validateConfig);
         let currentLeague = window.ENV_CONFIG.app.defaultLeague; // Default league from config
         let leaguesData = {};
         let matchesData = {};
+        let uiListenersAttached = false; // prevent duplicate UI listener attachment
+        let isSubmittingScore = false;   // prevent double submit
+        let isUndoingLastMatch = false;  // prevent double undo
+        let bypassDuplicateCheckOnce = false; // allow one bypass after confirm
+        let lastNotifiedMatchCount = {}; // track last notified count per league
 
         // UI Elements
         const loadingOverlay = document.getElementById('loadingOverlay');
@@ -628,6 +820,13 @@ mobileSidebar.querySelectorAll('button[data-page], a[data-page]').forEach(button
                 app = initializeApp(firebaseConfig);
                 auth = getAuth(app);
                 db = getFirestore(app);
+                // Offline cache for Firestore (standings & matches)
+                try {
+                    await enableIndexedDbPersistence(db);
+                    console.log('Firestore offline persistence enabled');
+                } catch (err) {
+                    console.warn('Could not enable offline persistence', err);
+                }
 
                 if (initialAuthToken) {
                     await signInWithCustomToken(auth, initialAuthToken);
@@ -700,6 +899,8 @@ mobileSidebar.querySelectorAll('button[data-page], a[data-page]').forEach(button
         }
         
         function setupUIEventListeners() {
+            if (uiListenersAttached) return;
+            uiListenersAttached = true;
             // Auth button handlers
             googleSignInBtn.addEventListener('click', async () => {
                 const provider = new GoogleAuthProvider();
@@ -713,6 +914,16 @@ mobileSidebar.querySelectorAll('button[data-page], a[data-page]').forEach(button
                 } finally {
                     hideLoading();
                 }
+            });
+
+            // Theme toggle
+            const themeToggle = document.getElementById('themeToggle');
+            const rootHtml = document.documentElement;
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') { rootHtml.classList.add('dark'); }
+            themeToggle.addEventListener('click', () => {
+                rootHtml.classList.toggle('dark');
+                localStorage.setItem('theme', rootHtml.classList.contains('dark') ? 'dark' : 'light');
             });
             
             signOutBtn.addEventListener('click', async () => {
@@ -744,24 +955,94 @@ mobileSidebar.querySelectorAll('button[data-page], a[data-page]').forEach(button
 
             // League selector listeners
             document.getElementById('leagueSelectorLeague').addEventListener('change', (e) => {
-                currentLeague = e.target.value;
+                currentLeague = e.target.value || null;
                 renderLeagueTable();
+                renderHomeUpdates();
             });
 
             document.getElementById('leagueSelectorMatches').addEventListener('change', (e) => {
-                currentLeague = e.target.value;
+                currentLeague = e.target.value || null;
                 renderMatchesTable();
+                renderHomeUpdates();
             });
 
             document.getElementById('leagueSelectorAdmin').addEventListener('change', (e) => {
-                currentLeague = e.target.value;
+                currentLeague = e.target.value || null;
                 checkAdminStatus();
                 renderAdminList();
+                renderHomeUpdates();
             });
 
             // Match search listener
             document.getElementById('matchSearch').addEventListener('input', (e) => {
                 renderMatchesTable(e.target.value);
+            });
+
+            // Delegated undo per-match on table
+            document.getElementById('matchesTable').addEventListener('click', (e) => {
+                const target = e.target;
+                if (!(target instanceof Element)) return;
+                if (!target.classList.contains('undo-match-btn')) return;
+                if (!isCurrentLeagueAdmin) {
+                    showMessageBox("You do not have permission to undo a match in this league.");
+                    return;
+                }
+                const indexStr = target.getAttribute('data-index');
+                if (indexStr === null) return;
+                const matchIndex = parseInt(indexStr, 10);
+                if (Number.isNaN(matchIndex)) return;
+                showConfirmation("Undo this match and revert standings?", async () => {
+                    if (isUndoingLastMatch) { return; }
+                    isUndoingLastMatch = true;
+                    showLoading();
+                    try {
+                        await undoMatchByIndex(matchIndex);
+                    } catch (err) {
+                        console.error('Error undoing selected match:', err);
+                        showMessageBox("Error undoing selected match. See console for details.");
+                    } finally {
+                        isUndoingLastMatch = false;
+                        hideLoading();
+                    }
+                });
+            });
+
+            // Notifications
+            const notificationsToggle = document.getElementById('notificationsToggle');
+            const installBtn = document.getElementById('installBtn');
+            let deferredPrompt = null;
+
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                installBtn.classList.remove('hidden');
+            });
+
+            installBtn.addEventListener('click', async () => {
+                if (!deferredPrompt) return;
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    showToast('Installing EasyLeague...');
+                }
+                deferredPrompt = null;
+                installBtn.classList.add('hidden');
+            });
+            notificationsToggle.addEventListener('click', async () => {
+                if (!('Notification' in window)) {
+                    showMessageBox('Notifications not supported in this browser.');
+                    return;
+                }
+                if (Notification.permission === 'granted') {
+                    showMessageBox('Notifications already enabled.');
+                } else {
+                    const perm = await Notification.requestPermission();
+                    if (perm === 'granted') {
+                        showMessageBox('Notifications enabled.');
+                    } else {
+                        showMessageBox('Notifications denied.');
+                    }
+                }
             });
             
             // Admin form listeners
@@ -910,12 +1191,74 @@ mobileSidebar.querySelectorAll('button[data-page], a[data-page]').forEach(button
                 });
             });
 
+            // Auto-flush queued scores when back online and authenticated
+            window.addEventListener('online', tryFlushQueuedScores);
+
+            async function tryFlushQueuedScores() {
+                const queued = JSON.parse(localStorage.getItem('queuedScores') || '[]');
+                if (!queued.length || !currentUserId || !currentLeague) return;
+                showToast(`Syncing ${queued.length} queued result(s)...`);
+                const items = queued.slice();
+                localStorage.setItem('queuedScores', JSON.stringify([]));
+                for (const item of items) {
+                    try {
+                        const leagueDocRef = doc(leaguesCollection(), item.league);
+                        const matchesDocRef = doc(matchesCollection(), item.league);
+                        await runTransaction(db, async (transaction) => {
+                            const leagueDoc = await transaction.get(leagueDocRef);
+                            const matchesDoc = await transaction.get(matchesDocRef);
+                            if (!leagueDoc.exists()) throw 'League does not exist!';
+                            let teams = leagueDoc.data().teams;
+                            const homeTeamStats = teams.find(t => t.team === item.homeTeam);
+                            const awayTeamStats = teams.find(t => t.team === item.awayTeam);
+                            if (!homeTeamStats || !awayTeamStats) throw 'One or more teams not found!';
+                            // Update stats
+                            homeTeamStats.P++; awayTeamStats.P++;
+                            homeTeamStats.GF += item.homeGoals; homeTeamStats.GA += item.awayGoals;
+                            awayTeamStats.GF += item.awayGoals; awayTeamStats.GA += item.homeGoals;
+                            homeTeamStats.GD = homeTeamStats.GF - homeTeamStats.GA;
+                            awayTeamStats.GD = awayTeamStats.GF - awayTeamStats.GA;
+                            if (item.homeGoals > item.awayGoals) { homeTeamStats.W++; awayTeamStats.L++; homeTeamStats.Pts += 3; }
+                            else if (item.awayGoals > item.homeGoals) { awayTeamStats.W++; homeTeamStats.L++; awayTeamStats.Pts += 3; }
+                            else { homeTeamStats.D++; awayTeamStats.D++; homeTeamStats.Pts++; awayTeamStats.Pts++; }
+                            transaction.update(leagueDocRef, { teams });
+                            const match = {
+                                home: item.homeTeam,
+                                away: item.awayTeam,
+                                score: `${item.homeGoals}-${item.awayGoals}`,
+                                date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                                submittedById: item.byId,
+                                submittedByName: item.byName
+                            };
+                            if (matchesDoc.exists()) {
+                                const matchesArr = matchesDoc.data().matches || [];
+                                matchesArr.push(match);
+                                transaction.update(matchesDocRef, { matches: matchesArr });
+                            } else {
+                                transaction.set(matchesDocRef, { matches: [match] });
+                            }
+                        });
+                    } catch (err) {
+                        console.error('Error syncing queued score', err);
+                        // Put back in queue if failure
+                        const rest = JSON.parse(localStorage.getItem('queuedScores') || '[]');
+                        rest.push(item);
+                        localStorage.setItem('queuedScores', JSON.stringify(rest));
+                        showToast('Some queued results failed to sync. Will retry later.');
+                        break;
+                    }
+                }
+                showToast('Queued results sync completed.');
+            }
+
             document.getElementById('scoreForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 if (!isCurrentLeagueAdmin) {
                     showMessageBox("You do not have permission to submit a score for this league.");
                     return;
                 }
+                if (isSubmittingScore) { return; }
+                isSubmittingScore = true;
                 const homeTeam = document.getElementById('homeTeam').value;
                 const awayTeam = document.getElementById('awayTeam').value;
                 const homeGoals = parseInt(document.getElementById('homeGoals').value, 10);
@@ -930,8 +1273,36 @@ mobileSidebar.querySelectorAll('button[data-page], a[data-page]').forEach(button
                     return;
                 }
 
+                // Anti-duplicate: check if same teams already have a match today
+                const todayStr = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                const todaysMatches = (matchesData[currentLeague] || []).filter(m => m.date === todayStr && ((m.home === homeTeam && m.away === awayTeam) || (m.home === awayTeam && m.away === homeTeam)));
+                if (todaysMatches.length > 0 && !bypassDuplicateCheckOnce) {
+                    isSubmittingScore = false;
+                    showConfirmation("A match between these teams is already recorded today. Submit anyway?", async () => {
+                        bypassDuplicateCheckOnce = true;
+                        const btn = document.querySelector('#scoreForm button[type="submit"]');
+                        if (btn) btn.click();
+                    });
+                    return;
+                }
+                bypassDuplicateCheckOnce = false;
+
                 showLoading();
+                const submitBtn = document.querySelector('#scoreForm button[type="submit"]');
+                if (submitBtn) submitBtn.disabled = true;
                 try {
+                    // If offline, queue submission locally and schedule background sync
+                    if (!navigator.onLine) {
+                        const queued = JSON.parse(localStorage.getItem('queuedScores') || '[]');
+                        queued.push({ league: currentLeague, homeTeam, awayTeam, homeGoals, awayGoals, byId: currentUserId, byName: currentUserName, queuedAt: Date.now() });
+                        localStorage.setItem('queuedScores', JSON.stringify(queued));
+                        showToast('Offline: result queued and will sync when online.');
+                        if ('serviceWorker' in navigator && 'SyncManager' in window && navigator.serviceWorker.ready) {
+                            try { (await navigator.serviceWorker.ready).sync.register('sync-scores'); } catch (_) {}
+                        }
+                        return;
+                    }
+
                     const leagueDocRef = doc(leaguesCollection(), currentLeague);
                     const matchesDocRef = doc(matchesCollection(), currentLeague);
                     
@@ -980,7 +1351,9 @@ mobileSidebar.querySelectorAll('button[data-page], a[data-page]').forEach(button
                       home: homeTeam,
                       away: awayTeam,
                       score: `${homeGoals}-${awayGoals}`,
-                      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                      submittedById: currentUserId,
+                      submittedByName: currentUserName
                   };
 
                   if (matchesDoc.exists()) {
@@ -999,6 +1372,8 @@ mobileSidebar.querySelectorAll('button[data-page], a[data-page]').forEach(button
                     console.error("Error submitting score:", e);
                     showMessageBox("Error submitting score. See console for details.");
                 } finally {
+                    if (submitBtn) submitBtn.disabled = false;
+                    isSubmittingScore = false;
                     hideLoading();
                 }
             });
@@ -1037,6 +1412,31 @@ mobileSidebar.querySelectorAll('button[data-page], a[data-page]').forEach(button
                 });
             });
 
+            // Undo last match handler
+            document.getElementById('undoLastMatchBtn').addEventListener('click', () => {
+                if (!isCurrentLeagueAdmin) {
+                    showMessageBox("You do not have permission to undo a match in this league.");
+                    return;
+                }
+                showConfirmation("Undo the most recent match YOU submitted and revert standings?", async () => {
+                    if (isUndoingLastMatch) { return; }
+                    isUndoingLastMatch = true;
+                    showLoading();
+                    const undoBtn = document.getElementById('undoLastMatchBtn');
+                    if (undoBtn) undoBtn.disabled = true;
+                    try {
+                        await undoMostRecentByCurrentAdmin();
+                    } catch (e) {
+                        console.error("Error undoing last match:", e);
+                        showMessageBox(typeof e === 'string' ? e : "Error undoing last match. See console for details.");
+                    } finally {
+                        if (undoBtn) undoBtn.disabled = false;
+                        isUndoingLastMatch = false;
+                        hideLoading();
+                    }
+                });
+            });
+
             // Message box handlers
             document.getElementById('closeMessageBox').addEventListener('click', () => {
                 document.getElementById('messageBox').classList.remove('active');
@@ -1053,45 +1453,55 @@ mobileSidebar.querySelectorAll('button[data-page], a[data-page]').forEach(button
             // Listen for changes in leagues data
             onSnapshot(leaguesCollection(), (snapshot) => {
                 const newLeaguesData = {};
-                const leagueSelectors = document.querySelectorAll('select[id^="leagueSelector"]');
+                const leagueSelectorLeague = document.getElementById('leagueSelectorLeague');
+                const leagueSelectorMatches = document.getElementById('leagueSelectorMatches');
                 const selectedLeague = currentLeague;
                 
-                // Clear existing options
-                leagueSelectors.forEach(selector => selector.innerHTML = '');
+                // Clear existing options (only public selectors; Admin selector handled separately)
+                if (leagueSelectorLeague) leagueSelectorLeague.innerHTML = '';
+                if (leagueSelectorMatches) leagueSelectorMatches.innerHTML = '';
 
                 if (snapshot.docs.length > 0) {
                     snapshot.forEach(doc => {
                         newLeaguesData[doc.id] = doc.data();
-                        leagueSelectors.forEach(selector => {
-                            const option = document.createElement('option');
-                            option.value = doc.id;
-                            option.textContent = doc.id;
-                            selector.appendChild(option);
-                        });
-                    });
+                });
+                // Populate options (no placeholder; we will auto-select) for public selectors
+                const allLeagueNames = Object.keys(newLeaguesData);
+                allLeagueNames.forEach(name => {
+                    if (leagueSelectorLeague) {
+                        const opt = document.createElement('option'); opt.value = name; opt.textContent = name; leagueSelectorLeague.appendChild(opt);
+                    }
+                    if (leagueSelectorMatches) {
+                        const opt2 = document.createElement('option'); opt2.value = name; opt2.textContent = name; leagueSelectorMatches.appendChild(opt2);
+                    }
+                });
                 } else {
                     console.log("No leagues found. Please create one.");
                 }
 
                leaguesData = newLeaguesData;
 
-              // If user is signed in and has an admin league, always select their league
+              // Determine currentLeague: prefer existing selection; otherwise admin's league; otherwise none
               const adminLeagues = currentUserId
-                  ? Object.keys(leaguesData).filter(leagueName => leaguesData[leagueName].adminId === currentUserId)
+                  ? Object.keys(newLeaguesData).filter(leagueName => newLeaguesData[leagueName].adminId === currentUserId)
                   : [];
-              if (adminLeagues.length > 0) {
+              if (selectedLeague && selectedLeague in newLeaguesData) {
+                  currentLeague = selectedLeague;
+              } else if (adminLeagues.length > 0) {
                   currentLeague = adminLeagues[0];
               } else {
-                  currentLeague = selectedLeague in leaguesData ? selectedLeague : (Object.keys(leaguesData)[0] || "Premier League");
+                  currentLeague = Object.keys(newLeaguesData)[0] || null;
               }
 
-              leagueSelectors.forEach(selector => selector.value = currentLeague);
+              if (leagueSelectorLeague) leagueSelectorLeague.value = currentLeague || '';
+              if (leagueSelectorMatches) leagueSelectorMatches.value = currentLeague || '';
 
               renderLeagueTable();
               checkAdminStatus();
-              renderAdminList();
+              renderAdminList(); // handles Admin selector population and value
               renderScoreFormTeams();
               renderRenameSelectTeams();
+                renderHomeUpdates();
             }, (error) => {
                 console.error("Error listening to leagues collection:", error);
                 showMessageBox("Error fetching leagues. See console for details.");
@@ -1103,8 +1513,25 @@ mobileSidebar.querySelectorAll('button[data-page], a[data-page]').forEach(button
                 snapshot.forEach(doc => {
                     newMatchesData[doc.id] = doc.data().matches;
                 });
+                const previous = matchesData;
                 matchesData = newMatchesData;
                 renderMatchesTable();
+                renderHomeUpdates();
+                // Show browser notification for new match in current league
+                try {
+                    if (window.Notification && Notification.permission === 'granted' && currentLeague) {
+                        const curr = matchesData[currentLeague] || [];
+                        const prevCount = lastNotifiedMatchCount[currentLeague] || 0;
+                        if (curr.length > prevCount) {
+                            const last = curr[curr.length - 1];
+                            new Notification('New Result', { body: `${last.home} ${last.score} ${last.away}` });
+                            lastNotifiedMatchCount[currentLeague] = curr.length;
+                        } else {
+                            // keep in sync without notifying if lengths are equal or lower
+                            lastNotifiedMatchCount[currentLeague] = curr.length;
+                        }
+                    }
+                } catch (err) { console.warn('Notification error', err); }
             }, (error) => {
                 console.error("Error listening to matches collection:", error);
                 showMessageBox("Error fetching matches. See console for details.");
@@ -1115,7 +1542,7 @@ mobileSidebar.querySelectorAll('button[data-page], a[data-page]').forEach(button
             const tableBody = document.getElementById('leagueTable').querySelector('tbody');
             tableBody.innerHTML = '';
             
-            const teams = leaguesData[currentLeague]?.teams || [];
+            const teams = currentLeague ? (leaguesData[currentLeague]?.teams || []) : [];
             
             // Sort teams by points (desc), then goal difference (desc), then goals for (desc)
             teams.sort((a, b) => {
@@ -1134,7 +1561,7 @@ mobileSidebar.querySelectorAll('button[data-page], a[data-page]').forEach(button
             teams.forEach(team => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${team.team}</td>
+                    <td><button class="team-link hover:underline" data-team="${team.team}">${team.team}</button></td>
                     <td class="numeric">${team.P}</td>
                     <td class="numeric">${team.W}</td>
                     <td class="numeric">${team.D}</td>
@@ -1146,13 +1573,17 @@ mobileSidebar.querySelectorAll('button[data-page], a[data-page]').forEach(button
                 `;
                 tableBody.appendChild(row);
             });
+            // Hook team link clicks
+            tableBody.querySelectorAll('.team-link').forEach(btn => {
+                btn.addEventListener('click', () => openTeamModal(btn.dataset.team));
+            });
         }
         
         function renderMatchesTable(searchTerm = '') {
             const tableBody = document.getElementById('matchesTable').querySelector('tbody');
             tableBody.innerHTML = '';
             
-            const matches = matchesData[currentLeague] || [];
+            const matches = currentLeague ? (matchesData[currentLeague] || []) : [];
 
             if (matches.length === 0) {
                 const row = document.createElement('tr');
@@ -1173,13 +1604,17 @@ mobileSidebar.querySelectorAll('button[data-page], a[data-page]').forEach(button
                 return;
             }
 
-           filteredMatches.forEach(match => {
+           filteredMatches.forEach((match, idx) => {
             const row = document.createElement('tr');
+            const matchIndex = matches.indexOf(match); // original index in matches array
+            const canUndo = isCurrentLeagueAdmin && match.submittedById === currentUserId;
+            const actionCell = canUndo ? `<button class="neumorphic-button px-3 py-1 text-xs text-red-700 undo-match-btn" data-index="${matchIndex}">Undo</button>` : '';
             row.innerHTML = `
-                <td>${match.home}</td>
+                <td class="teams-cell" data-away="${match.away}">${match.home}</td>
                 <td>${match.away}</td>
-                <td class="numeric">${match.score}</td>
-                <td class="numeric">${match.date}</td>
+                <td class="numeric"><span class="score-pill matches-score">${match.score}</span></td>
+                <td class="date-cell">${match.date}${match.submittedByName ? ` · <span class=\"text-xs text-gray-500\">${match.submittedByName}</span>` : ''}</td>
+                <td class="numeric">${actionCell}</td>
             `;
             tableBody.appendChild(row);
         });
@@ -1252,12 +1687,16 @@ mobileSidebar.querySelectorAll('button[data-page], a[data-page]').forEach(button
 
     // Populate team and score forms for the current league
     renderTeamList();
+    // Ensure admin sections reflect the possibly updated currentLeague
+    checkAdminStatus();
+    renderScoreFormTeams();
+    renderRenameSelectTeams();
 }
 
         function renderTeamList() {
             const teamListUl = document.getElementById('teamList');
             teamListUl.innerHTML = '';
-            const teams = leaguesData[currentLeague]?.teams || [];
+            const teams = currentLeague ? (leaguesData[currentLeague]?.teams || []) : [];
             
             if (teams.length === 0) {
                 teamListUl.innerHTML = `<li class="italic text-gray-500">No teams in this league.</li>`;
@@ -1283,7 +1722,7 @@ mobileSidebar.querySelectorAll('button[data-page], a[data-page]').forEach(button
             homeSelect.innerHTML = '';
             awaySelect.innerHTML = '';
 
-            const teams = leaguesData[currentLeague]?.teams || [];
+            const teams = currentLeague ? (leaguesData[currentLeague]?.teams || []) : [];
             teams.forEach(team => {
                 const option1 = document.createElement('option');
                 option1.value = team.team;
@@ -1301,7 +1740,7 @@ mobileSidebar.querySelectorAll('button[data-page], a[data-page]').forEach(button
             const renameSelect = document.getElementById('renameSelect');
             renameSelect.innerHTML = '';
 
-            const teams = leaguesData[currentLeague]?.teams || [];
+            const teams = currentLeague ? (leaguesData[currentLeague]?.teams || []) : [];
             if (teams.length === 0) {
                 renameSelect.innerHTML = `<option value="">No teams to rename</option>`;
                 return;
@@ -1314,10 +1753,140 @@ mobileSidebar.querySelectorAll('button[data-page], a[data-page]').forEach(button
             });
         }
 
+        // Home page latest updates
+        function renderHomeUpdates() {
+            const tickerTrack = document.getElementById('homeTickerTrack');
+            if (!tickerTrack) return;
+
+            const matches = currentLeague ? (matchesData[currentLeague] || []).slice() : [];
+            if (matches.length === 0) {
+                if (tickerTrack) tickerTrack.innerHTML = '';
+                return;
+            }
+
+            // Show last 10 recent matches
+            const recent = matches.slice(-10).reverse();
+            if (tickerTrack) {
+                const makeInitials = (name) => (name || '').trim().split(/\s+/).map(w => w[0]).join('').slice(0,2).toUpperCase();
+                const pastel = (str) => {
+                    let hash = 0; for (let i=0; i<str.length; i++) { hash = (hash<<5) - hash + str.charCodeAt(i); hash |= 0; }
+                    const h = Math.abs(hash) % 360;
+                    return `hsl(${h}, 70%, 45%)`;
+                };
+                const items = recent.map(m => {
+                    const hi = makeInitials(m.home);
+                    const ai = makeInitials(m.away);
+                    const hb = pastel(m.home);
+                    const ab = pastel(m.away);
+                    return `<span class=\"ticker-item\">`
+                        + `<span class=\"badge-initials\" style=\"background:${hb}\">${hi}</span>`
+                        + `<span>${m.home}</span>`
+                        + `<span class=\"score-pill\">${m.score}</span>`
+                        + `<span>${m.away}</span>`
+                        + `<span class=\"badge-initials\" style=\"background:${ab}\">${ai}</span>`
+                        + `<span class=\"ticker-meta\">${m.date}</span>`
+                    + `</span>`;
+                });
+                const spacer = '\u00A0\u00A0\u00A0';
+                const tickerContent = items.join(spacer);
+                tickerTrack.innerHTML = `${tickerContent}${spacer}${tickerContent}`;
+                requestAnimationFrame(() => {
+                    const width = tickerTrack.scrollWidth / 2;
+                    const pxPerSec = 120;
+                    const duration = Math.max(15, Math.round(width / pxPerSec));
+                    tickerTrack.style.setProperty('--ticker-duration', `${duration}s`);
+                });
+            }
+        }
+
+        // Team details modal logic
+        function openTeamModal(teamName) {
+            const modal = document.getElementById('teamModal');
+            const title = document.getElementById('teamModalTitle');
+            const subtitle = document.getElementById('teamModalSubtitle');
+            const formBadges = document.getElementById('teamFormBadges');
+            const recentList = document.getElementById('teamRecentMatches');
+            const h2hOpponent = document.getElementById('h2hOpponent');
+            const h2hSummary = document.getElementById('h2hSummary');
+
+            title.textContent = teamName;
+            const teams = currentLeague ? (leaguesData[currentLeague]?.teams || []) : [];
+            const stats = teams.find(t => t.team === teamName);
+            subtitle.textContent = stats ? `P ${stats.P}  •  W ${stats.W}  •  D ${stats.D}  •  L ${stats.L}  •  GD ${stats.GD}  •  Pts ${stats.Pts}` : '';
+
+            const matches = currentLeague ? (matchesData[currentLeague] || []) : [];
+            const teamMatches = matches.filter(m => m.home === teamName || m.away === teamName);
+            const recent = teamMatches.slice(-5).reverse();
+
+            // Form badges
+            formBadges.innerHTML = '';
+            recent.forEach(m => {
+                let result = 'D';
+                const [hg, ag] = m.score.split('-').map(x => parseInt(x, 10));
+                const isHome = m.home === teamName;
+                const gf = isHome ? hg : ag;
+                const ga = isHome ? ag : hg;
+                if (gf > ga) result = 'W'; else if (gf < ga) result = 'L';
+                const span = document.createElement('span');
+                span.className = `form-badge ${result}`;
+                span.textContent = result;
+                formBadges.appendChild(span);
+            });
+
+            // Recent list
+            recentList.classList.add('recent-match-list');
+            recentList.innerHTML = '';
+            recent.forEach(m => {
+                const li = document.createElement('li');
+                li.className = 'recent-match-item';
+                li.innerHTML = `<span class="recent-match-teams">${m.home} vs ${m.away}</span>`
+                    + `<span class="score-pill recent-match-score">${m.score}</span>`
+                    + `<span class="recent-match-date">${m.date}</span>`;
+                recentList.appendChild(li);
+            });
+
+            // Populate H2H opponents
+            h2hOpponent.innerHTML = '';
+            teams.filter(t => t.team !== teamName).forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t.team; opt.textContent = t.team;
+                h2hOpponent.appendChild(opt);
+            });
+            const updateH2H = () => {
+                const opp = h2hOpponent.value;
+                if (!opp) { h2hSummary.textContent = ''; return; }
+                const h2hMatches = matches.filter(m => (m.home === teamName && m.away === opp) || (m.home === opp && m.away === teamName));
+                let w=0,d=0,l=0, gf=0, ga=0;
+                h2hMatches.forEach(m => {
+                    const [hg, ag] = m.score.split('-').map(x => parseInt(x, 10));
+                    const isHome = m.home === teamName;
+                    const tgf = isHome ? hg : ag;
+                    const tga = isHome ? ag : hg;
+                    gf += tgf; ga += tga;
+                    if (tgf > tga) w++; else if (tgf < tga) l++; else d++;
+                });
+                h2hSummary.textContent = `${teamName} vs ${opp}: W ${w} • D ${d} • L ${l} • GF ${gf} • GA ${ga}`;
+            };
+            h2hOpponent.addEventListener('change', updateH2H);
+            updateH2H();
+
+            modal.classList.add('active');
+            document.getElementById('teamModalClose').onclick = () => modal.classList.remove('active');
+        }
+
         // Custom Message and Confirmation Boxes
         function showMessageBox(message) {
             document.getElementById('messageText').textContent = message;
             document.getElementById('messageBox').classList.add('active');
+        }
+
+        function showToast(text) {
+            const container = document.getElementById('toastContainer');
+            const el = document.createElement('div');
+            el.className = 'neumorphic-card px-4 py-2 text-sm text-gray-700';
+            el.textContent = text;
+            container.appendChild(el);
+            setTimeout(() => { el.remove(); }, 3500);
         }
 
         function showConfirmation(message, onConfirm) {
@@ -1369,7 +1938,117 @@ mobileSidebar.querySelectorAll('button[data-page], a[data-page]').forEach(button
                 hideLoading();
             });
         }
+
+        // Undo a specific match by index in the matches array
+        async function undoMatchByIndex(matchIndex) {
+            const leagueDocRef = doc(leaguesCollection(), currentLeague);
+            const matchesDocRef = doc(matchesCollection(), currentLeague);
+            let undoneDescription = '';
+
+            await runTransaction(db, async (transaction) => {
+                const leagueDoc = await transaction.get(leagueDocRef);
+                const matchesDoc = await transaction.get(matchesDocRef);
+
+                if (!leagueDoc.exists()) { throw "League does not exist!"; }
+                if (!matchesDoc.exists()) { throw "No matches found!"; }
+
+                const matchesArr = (matchesDoc.data().matches || []).slice();
+                if (matchIndex < 0 || matchIndex >= matchesArr.length) { throw "Invalid match index!"; }
+                const match = matchesArr[matchIndex];
+
+                // Ownership check
+                if (match.submittedById && match.submittedById !== currentUserId) {
+                    throw "You can only undo matches you submitted.";
+                }
+
+                const homeName = match.home;
+                const awayName = match.away;
+                const [homeGoals, awayGoals] = String(match.score).split('-').map(n => parseInt(n, 10));
+
+                const teams = leagueDoc.data().teams;
+                const homeTeamStats = teams.find(t => t.team === homeName);
+                const awayTeamStats = teams.find(t => t.team === awayName);
+                if (!homeTeamStats || !awayTeamStats) { throw "One or more teams not found while undoing!"; }
+
+                // Revert stats
+                homeTeamStats.P = Math.max(0, homeTeamStats.P - 1);
+                awayTeamStats.P = Math.max(0, awayTeamStats.P - 1);
+                homeTeamStats.GF = Math.max(0, homeTeamStats.GF - homeGoals);
+                homeTeamStats.GA = Math.max(0, homeTeamStats.GA - awayGoals);
+                awayTeamStats.GF = Math.max(0, awayTeamStats.GF - awayGoals);
+                awayTeamStats.GA = Math.max(0, awayTeamStats.GA - homeGoals);
+
+                if (homeGoals > awayGoals) {
+                    homeTeamStats.W = Math.max(0, homeTeamStats.W - 1);
+                    awayTeamStats.L = Math.max(0, awayTeamStats.L - 1);
+                    homeTeamStats.Pts = Math.max(0, homeTeamStats.Pts - 3);
+                } else if (awayGoals > homeGoals) {
+                    awayTeamStats.W = Math.max(0, awayTeamStats.W - 1);
+                    homeTeamStats.L = Math.max(0, homeTeamStats.L - 1);
+                    awayTeamStats.Pts = Math.max(0, awayTeamStats.Pts - 3);
+                } else {
+                    homeTeamStats.D = Math.max(0, homeTeamStats.D - 1);
+                    awayTeamStats.D = Math.max(0, awayTeamStats.D - 1);
+                    homeTeamStats.Pts = Math.max(0, homeTeamStats.Pts - 1);
+                    awayTeamStats.Pts = Math.max(0, awayTeamStats.Pts - 1);
+                }
+
+                homeTeamStats.GD = homeTeamStats.GF - homeTeamStats.GA;
+                awayTeamStats.GD = awayTeamStats.GF - awayTeamStats.GA;
+
+                // Remove that specific match
+                matchesArr.splice(matchIndex, 1);
+
+                transaction.update(leagueDocRef, { teams: teams });
+                transaction.set(matchesDocRef, { matches: matchesArr });
+
+                undoneDescription = `${homeName} ${homeGoals}-${awayGoals} ${awayName}`;
+            });
+
+            showMessageBox(`Match undone: ${undoneDescription}`);
+        }
+
+        // Undo the most recent match submitted by current admin
+        async function undoMostRecentByCurrentAdmin() {
+            const matchesDocRef = doc(matchesCollection(), currentLeague);
+            const snapshot = await getDoc(matchesDocRef);
+            if (!snapshot.exists()) { throw "No matches to undo!"; }
+            const matchesArr = snapshot.data().matches || [];
+            // Find last index where submittedById === currentUserId
+            let indexToUndo = -1;
+            for (let i = matchesArr.length - 1; i >= 0; i--) {
+                const m = matchesArr[i];
+                if (m.submittedById === currentUserId) { indexToUndo = i; break; }
+            }
+            if (indexToUndo === -1) { throw "No matches submitted by you to undo."; }
+            await undoMatchByIndex(indexToUndo);
+        }
         
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').then((reg) => {
+                    navigator.serviceWorker.addEventListener('message', (event) => {
+                        if (event.data && event.data.type === 'SW_UPDATED') {
+                            showToast('Update ready. Reload to apply.');
+                            const btn = document.createElement('button');
+                            btn.className = 'neumorphic-button px-3 py-1 ml-2';
+                            btn.textContent = 'Reload';
+                            btn.onclick = () => window.location.reload();
+                            const container = document.getElementById('toastContainer');
+                            const wrap = document.createElement('div');
+                            wrap.className = 'neumorphic-card px-4 py-2 text-sm text-gray-700 flex items-center gap-2';
+                            wrap.textContent = 'Update ready';
+                            wrap.appendChild(btn);
+                            container.appendChild(wrap);
+                            setTimeout(() => wrap.remove(), 8000);
+                        }
+                    });
+                    return reg;
+                }).catch(console.warn);
+            });
+        }
+
         initializeAndAuthenticate();
     </script>
    
