@@ -346,7 +346,7 @@
         <button data-page="home" class="neumorphic-button px-4 py-2">Home</button>
         <button data-page="league" class="neumorphic-button px-4 py-2">League</button>
         <button data-page="matches" class="neumorphic-button px-4 py-2">Matches</button>
-        <a href="https://tournament-e645c.web.app/" class="neumorphic-button px-4 py-2">Tournament</a>
+        <a href="https://tournament-e645c.web.app/" id="tournamentLinkDesktop" class="neumorphic-button px-4 py-2">Tournament</a>
         <a href="" id="fixturesLinkDesktop" class="neumorphic-button px-4 py-2">Fixtures</a>
         <button data-page="admin" id="adminNavBtn" class="neumorphic-button px-4 py-2 hidden">Admin</button>
     </nav>
@@ -380,7 +380,7 @@
         <button data-page="home" class="neumorphic-button px-4 py-2 w-full">Home</button>
         <button data-page="league" class="neumorphic-button px-4 py-2 w-full">League</button>
         <button data-page="matches" class="neumorphic-button px-4 py-2 w-full">Matches</button>
-        <a href="https://tournament-e645c.web.app/" class="neumorphic-button px-4 py-2">Tournament</a>
+        <a href="https://tournament-e645c.web.app/" id="tournamentLinkMobile" class="neumorphic-button px-4 py-2">Tournament</a>
        <a href="fixtures.html" id="fixturesLinkMobile" class="neumorphic-button px-4 py-2 w-full block text-center">Fixtures</a>
 
         <button data-page="admin" id="adminNavBtnMobile" class="neumorphic-button px-4 py-2 w-full hidden">Admin</button>
@@ -634,7 +634,8 @@
     
    
     services: {
-        fixturesUrl: "https://easyfixtures.vercel.app/"
+        fixturesUrl: "https://easyfixtures.vercel.app/",
+        tournamentUrl: "https://tournament-e645c.web.app/"
     }
 };
 
@@ -816,7 +817,9 @@ mobileSidebar.querySelectorAll('button[data-page], a[data-page]').forEach(button
             try {
                 // Set fixtures links and title from configuration
                 document.getElementById('fixturesLinkMobile').href = window.ENV_CONFIG.services.fixturesUrl;
+                document.getElementById('tournamentLinkMobile').href = window.ENV_CONFIG.services.tournamentUrl;
                 document.getElementById('fixturesLinkDesktop').href = window.ENV_CONFIG.services.fixturesUrl;
+                document.getElementById('tournamentLinkDesktop').href = window.ENV_CONFIG.services.tournamentUrl;
                 document.getElementById('pageTitle').textContent = window.ENV_CONFIG.app.name;
                 
                 app = initializeApp(firebaseConfig);
